@@ -19,8 +19,8 @@
 
 
 //ESP32 C2 Kaluga
-// #define TFT_WIDTH   240
-// #define TFT_HEIGHT  320
+#define TFT_WIDTH   320
+#define TFT_HEIGHT  240
 // #define TFT_SDA_READ      // This option is for ESP32 ONLY, tested with ST7789 and GC9A01 display only
 
 
@@ -32,21 +32,24 @@
 #define TFT_DC    13
 #define TFT_RST   16
 
-//#define TOUCH_CS  1 // Optional for touch screen
+//#define TOUCH_CS 16 // Optional for touch screen
 
-// #define LOAD_GLCD
-// #define LOAD_FONT2
-// #define LOAD_FONT4
-// #define LOAD_FONT6
-// #define LOAD_FONT7
-// #define LOAD_FONT8
-// #define LOAD_GFXFF
+#define LOAD_GLCD
+#define LOAD_FONT2
+#define LOAD_FONT4
+#define LOAD_FONT6
+#define LOAD_FONT7
+#define LOAD_FONT8
+#define LOAD_GFXFF
 
-// #define SMOOTH_FONT
+#define SMOOTH_FONT
 
-#define SPI_FREQUENCY  1000000
-// #define SPI_FREQUENCY  40000000   // Maximum for ILI9341
+// FSPI port will be used unless the following is defined
+#define USE_HSPI_PORT
 
-#define SPI_READ_FREQUENCY  1000000 // 6 MHz is the maximum SPI read speed for the ST7789V
+//#define SPI_FREQUENCY  27000000
+#define SPI_FREQUENCY  40000000   // Maximum for ILI9341
 
-#define SPI_TOUCH_FREQUENCY 1000000
+#define SPI_READ_FREQUENCY  6000000 // 6 MHz is the maximum SPI read speed for the ST7789V
+
+#define SPI_TOUCH_FREQUENCY 2500000
