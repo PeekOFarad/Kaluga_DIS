@@ -34,6 +34,7 @@ Display SPI frequency = 27.00
 #include <../.pio/libdeps/esp32-s2-kaluga-1/TFT_eSPI/User_Setups/Setup420.h>
 #include <ESP32Time.h>
 #include <time.h>
+#include <../lib/display_time.h>
 
 
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
@@ -42,23 +43,46 @@ ESP32Time rtc(0);
 struct tm timeinfo;
 
 void setup()   {
-
   //Set up the display
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
-  tft.setTextSize(1);
+  tft.setTextSize(4);
   tft.setTextColor(TFT_WHITE);
   tft.setCursor(0, 0);
   rtc.setTimeStruct(timeinfo);
-  rtc.setTime(10, 20, 12, 0, 0, 0);
+  rtc.setTime(12, 12, 12, 0, 0, 0);
 }
 
 void loop() {
-  tft.fillScreen(TFT_BLACK);
-  delay(1000);
-  tft.fillScreen(TFT_WHITE);
-  delay(1000);
+  int sec, min, hour;
+  display_time(tft, rtc);
+  sec = rtc.getSecond();
+  min = rtc.getMinute();
+  hour = rtc.getHour();
+
+  if(min == 0 && sec == 0){
+    if(hour == 0){
+      hour = 23;
+    }
+    else {
+      hour--;
+    }
+  }
+  if(sec == 0){
+    if(min == 0){
+      min = 59;
+    }
+    else{
+      min--;
+    }
+    sec = 59;
+  }
+  else{
+    sec--;
+  }
+
+  delay(100);
 }
 
 // #define GRIDX 120
