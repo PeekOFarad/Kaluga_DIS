@@ -31,7 +31,7 @@ Display SPI frequency = 27.00
 
 #include <TFT_eSPI.h>
 #include <SPI.h>
-#include <../lib/Setup420.h>
+#include <../.pio/libdeps/esp32-s2-kaluga-1/TFT_eSPI/User_Setups/Setup420.h>
 
 
 
