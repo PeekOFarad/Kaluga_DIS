@@ -32,10 +32,14 @@ Display SPI frequency = 27.00
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <../.pio/libdeps/esp32-s2-kaluga-1/TFT_eSPI/User_Setups/Setup420.h>
-
+#include <ESP32Time.h>
+#include <time.h>
 
 
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
+ESP32Time rtc(0);
+
+struct tm timeinfo;
 
 void setup()   {
 
@@ -46,7 +50,8 @@ void setup()   {
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE);
   tft.setCursor(0, 0);
-
+  rtc.setTimeStruct(timeinfo);
+  rtc.setTime(10, 20, 12, 0, 0, 0);
 }
 
 void loop() {
