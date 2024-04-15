@@ -1,0 +1,15 @@
+TODO:
+cooking timer
+
+1. set timer and display current remaining time
+2. use RTC
+3. Play a sound when finished (and/or almost finished)
+4. use buttons to set the timer
+
+
+Periferies used:
+1. display
+2. RTC - DONE
+3. buttons
+4. Lyra sound
+Emergency: Mission critical relaxing rgb rainbow diode
