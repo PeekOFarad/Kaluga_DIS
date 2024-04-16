@@ -47,7 +47,7 @@ void setup()   {
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
-  tft.setTextSize(4);
+  tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(0, 0);
   rtc.setTimeStruct(timeinfo);
@@ -61,28 +61,21 @@ void loop() {
   min = rtc.getMinute();
   hour = rtc.getHour();
 
-  if(min == 0 && sec == 0){
-    if(hour == 0){
-      hour = 23;
+  // Adjust the time values by adding 1 second
+    sec++;              // Advance second
+    if (sec == 60) {    // Check for roll-over
+      sec = 0;          // Reset seconds to zero
+      min++;            // Advance minute
+      if (min > 59) {   // Check for roll-over
+        min = 0;
+        hour++;          // Advance hour
+        if (hour > 23) { // Check for 24hr roll-over (could roll-over on 13)
+          hour = 0;      // 0 for 24 hour clock, set to 1 for 12 hour clock
+        }
+      }
     }
-    else {
-      hour--;
-    }
-  }
-  if(sec == 0){
-    if(min == 0){
-      min = 59;
-    }
-    else{
-      min--;
-    }
-    sec = 59;
-  }
-  else{
-    sec--;
-  }
 
   rtc.setTime(sec, min, hour, 0, 0, 0);
 
-  delay(100);
+  delay(1000);
 }
