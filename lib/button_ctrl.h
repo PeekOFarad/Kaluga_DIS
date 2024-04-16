@@ -1,0 +1,1 @@
+int checkButtons(int pinNum);
