@@ -31,6 +31,8 @@ int checkButtons(int pinNum) {
 }
 
 /*  
+    #include <../lib/Free_Fonts.h>
+    #include <../lib/button_ctrl.h>
 
     //main loop code for debugging. Shows returned pin number,
     //measured millivolts (uncalibrated) and binary adc value

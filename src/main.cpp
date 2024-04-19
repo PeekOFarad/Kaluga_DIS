@@ -32,28 +32,81 @@ Display SPI frequency = 27.00
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <../.pio/libdeps/esp32-s2-kaluga-1/TFT_eSPI/User_Setups/Setup420.h>
+#include <../lib/Free_Fonts.h>
+#include <../lib/button_ctrl.h>
 
+#include <../lib/arduino-audiokit-main/src/AudioKitHAL.h>
+#include <../lib/arduino-audiokit-main/src/AudioKitSettings.h>
+#include <../lib/arduino-audiokit-main/examples/output/SineWaveGenerator.h>
+#include <Wire.h>
 
+AudioKit kit;
+SineWaveGenerator wave;
+const int BUFFER_SIZE = 1024;
+uint8_t buffer[BUFFER_SIZE];
 
-TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
+int volume = 0;
+
+int pinButtonsADC = 6;
+
+// TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
 
 void setup()   {
+  //Audio/////////////////////////////////////////////////////////////////////////////////////////////////////
+  LOGLEVEL_AUDIOKIT = AudioKitInfo; 
+  Serial.begin(115200);
+  // open in write mode
+  auto cfg = kit.defaultConfig(KitOutput);
+  kit.begin(cfg);
+
+  // 1000 hz
+  wave.setFrequency(1000);
+  wave.setSampleRate(cfg.sampleRate());
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ADC_setup();
 
   //Set up the display
-  tft.init();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextSize(1);
-  tft.setTextColor(TFT_WHITE);
-  tft.setCursor(0, 0);
+  // tft.init();
+  // tft.setRotation(0);
+  // tft.fillScreen(TFT_BLACK);
+  // tft.setTextSize(1);
+  // tft.setTextColor(TFT_WHITE);
+  // tft.setCursor(0, 0);
+  kit.setVolume(0);
 
 }
 
 void loop() {
-  tft.fillScreen(TFT_BLACK);
-  delay(1000);
-  tft.fillScreen(TFT_WHITE);
-  delay(1000);
+  // tft.fillScreen(TFT_BLACK);
+  // delay(1000);
+  // tft.fillScreen(TFT_WHITE);
+  // delay(1000);
+  size_t l = wave.read(buffer, BUFFER_SIZE);
+  kit.write(buffer, l);
+  if (checkButtons(pinButtonsADC) == 6) {
+    if (volume < 100) {
+      volume++;
+    }
+    kit.setVolume(volume);
+    while (checkButtons(pinButtonsADC) != 0) {}
+  }
+  else if (checkButtons(pinButtonsADC) == 5) {
+    if (volume > 0) {
+      volume--;
+    }
+    kit.setVolume(volume);
+    while (checkButtons(pinButtonsADC) != 0) {}
+  }
+
+  // tft.fillScreen(TFT_BLACK);
+  // tft.setFreeFont(FF18);                 // Select the font
+  // tft.drawString(sFF7, 160, 60, GFXFF);// Print the string name of the font
+  // tft.setFreeFont(FF7);
+  // tft.drawString(String(checkButtons(pinButtonsADC)), 160, 120, GFXFF);
+  // tft.drawString(String(analogReadMilliVolts(pinButtonsADC)), 160, 150, GFXFF);
+  // tft.drawString(String(analogRead(pinButtonsADC)), 160, 180, GFXFF);
+  // delay(100);
+
 }
 
 // #define GRIDX 120

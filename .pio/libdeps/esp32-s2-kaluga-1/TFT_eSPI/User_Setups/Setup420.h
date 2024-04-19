@@ -31,6 +31,7 @@
 #define TFT_CS    11
 #define TFT_DC    13
 #define TFT_RST   16
+#define TFT_BL    -1
 
 //#define TOUCH_CS 16 // Optional for touch screen
 
