@@ -93,7 +93,7 @@ void display_timeSetup(TFT_eSPI & tft, const tm & timeinfo, const Selected_digit
     xpos += tft.drawChar(':', xsecs, ysecs, 6); // Seconds colon
 
     
-    if (currentDigit == Minutes) {
+    if (currentDigit == Seconds) {
       tft.setTextColor(TFT_YELLOW, TFT_BLACK);
     }
     //Draw seconds

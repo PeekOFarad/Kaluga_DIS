@@ -143,7 +143,7 @@ int pinButtonsADC = 6;
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
 
 ESP32Time rtc;
-tm timeSetup = {.tm_sec=0, .tm_min=0, .tm_hour=0};
+tm timeSetup = {0,0,0,0,0,0,0,0,0};
 
 Selected_digit currentDigit = Seconds;
 
@@ -155,23 +155,28 @@ void incrementDigit(Selected_digit currentDigit, bool increment=true) {
         timeSetup = *localtime(&epoch_t);
       }
       else {
-        timeSetup.tm_sec--;
+        time_t epoch_t = mktime(&timeSetup) - 1;
+        timeSetup = *localtime(&epoch_t);
       }
       break;
     case Minutes:
       if (increment) {
-        timeSetup.tm_min++;
+        time_t epoch_t = mktime(&timeSetup) + 60;
+        timeSetup = *localtime(&epoch_t);
       }
       else {
-        timeSetup.tm_min--;
+        time_t epoch_t = mktime(&timeSetup) - 60;
+        timeSetup = *localtime(&epoch_t);
       }
       break;
     case Hours:
       if (increment) {
-        timeSetup.tm_hour++;
+        time_t epoch_t = mktime(&timeSetup) + 3600;
+        timeSetup = *localtime(&epoch_t);
       }
       else {
-        timeSetup.tm_hour--;
+        time_t epoch_t = mktime(&timeSetup) - 3600;
+        timeSetup = *localtime(&epoch_t);
       }
       break;
 
@@ -220,6 +225,8 @@ void setup()   {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(0, 0);
 
+  display_timeSetup(tft, timeSetup, currentDigit);
+
 }
 
 void loop() {
@@ -227,13 +234,17 @@ void loop() {
   switch(checkButtons(pinButtonsADC))
   {
     case c_SW_RST:
+        while (checkButtons(pinButtonsADC)!=0){}
         currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
+        display_timeSetup(tft, timeSetup, currentDigit);
       break;
     case c_PLUS:
+        while (checkButtons(pinButtonsADC)!=0){}
         incrementDigit(currentDigit); //increment selected digit
         display_timeSetup(tft, timeSetup, currentDigit);
       break;
     case c_MINUS:
+    while (checkButtons(pinButtonsADC)!=0){}
         incrementDigit(currentDigit, false); //decrement selected digit
         display_timeSetup(tft, timeSetup, currentDigit);
       break;
