@@ -25,6 +25,23 @@ Smooth font enabled
 
 Display SPI frequency = 27.00
 [/code]*/
+/*
+LAMBADA
+E5 = 659
+D5 = 587
+C5 = 523
+H4 = 494
+A4 = 440
+A4 = 440
+C5 = 523
+H4 = 494
+A4 = 440
+G4 = 392
+A4 = 440
+E4 = 330
+D4 = 294
+E4 = 330
+*/
 ////////////////////////////////////////////////////////////////////
 #include <Arduino.h>
 // Walking 1 write and read pixel test
@@ -46,10 +63,92 @@ const int BUFFER_SIZE = 1024;
 uint8_t buffer[BUFFER_SIZE];
 
 int volume = 0;
+int my_frequency = 1000;
+// Define musical note frequencies for the range from C4 to B5
+const int BPM_DEFAULT = 120;  // Default Beats Per Minute (BPM)
+const int quarterNoteDuration = 60000 / BPM_DEFAULT; // Duration of a quarter note in milliseconds
+struct t_Note_duration {
+  int Whole     = 240000/ BPM_DEFAULT;
+  int Half      = 120000/ BPM_DEFAULT;
+  int Quarter   = 60000/ BPM_DEFAULT;
+  int Eighth    = 30000/ BPM_DEFAULT;
+  int Sixteenth = 15000/ BPM_DEFAULT;
+  int _32nd     = 7500/ BPM_DEFAULT;
+  int _64th     = 3750/ BPM_DEFAULT;
+};
+
+const t_Note_duration ND;
+
+struct t_Note_freq {
+  int C4      = 261;
+  int Cs4_Db4 = 277;
+  int D4      = 293;
+  int Ds4_Eb4 = 311;
+  int E4      = 329;
+  int F4      = 349;
+  int Fs4_Gb4 = 369;
+  int G4      = 392;
+  int Gs4_Ab4 = 415;
+  int A4      = 440;
+  int As4_Bb4 = 466;
+  int B4      = 493;
+  int C5      = 523;
+  int Cs5_Db5 = 554;
+  int D5      = 587;
+  int Ds5_Eb5 = 622;
+  int E5      = 659;
+  int F5      = 698;
+  int Fs5_Gb5 = 739;
+  int G5      = 784;
+  int Gs5_Ab5 = 830;
+  int A5      = 880;
+  int As5_Bb5 = 932;
+  int B5      = 987;
+};
+
+const t_Note_freq NF;
+
+struct Note {
+  int frequency;
+  int duration;
+};
+// Define musical notes and their frequencies
+Note lambada[] = {
+  {NF.E5, ND.Quarter+ND.Eighth},
+  {NF.D5, ND.Eighth},
+  {NF.C5, ND.Eighth},
+  {NF.B4, ND.Eighth},
+  {NF.A4, ND.Quarter},
+  {0    , ND._64th},
+  {NF.A4, ND.Eighth},
+  {NF.C5, ND.Eighth},
+  {NF.B4, ND.Eighth},
+  {NF.A4, ND.Eighth},
+  {NF.G4, ND.Eighth},
+  {NF.A4, ND.Eighth},
+  {NF.E4, ND.Eighth},
+  {NF.D4, ND.Eighth},
+  {NF.E4, ND.Half+ND.Quarter}
+};
+
+// int lambada[] =         {659, 587, 523, 494, 440, 440, 523, 494, 440, 392, 440, 330, 294, 330};
+// int lambada_length[] =  {505, 587, 523, 494, 440, 440, 523, 494, 440, 392, 440, 330, 294, 330};
+int size = sizeof(lambada) / sizeof(lambada[0]);
 
 int pinButtonsADC = 6;
 
-// TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
+TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
+
+void playNote(Note Note) {
+  unsigned long startMillis = millis();
+  unsigned long currentMilis = startMillis;
+  wave.setFrequency(Note.frequency);
+  while (currentMilis - startMillis < Note.duration) {
+    currentMilis = millis();
+    size_t l = wave.read(buffer, BUFFER_SIZE);
+    kit.write(buffer, l);
+  }
+}
 
 void setup()   {
   //Audio/////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,21 +165,17 @@ void setup()   {
   ADC_setup();
 
   //Set up the display
-  // tft.init();
-  // tft.setRotation(0);
-  // tft.fillScreen(TFT_BLACK);
-  // tft.setTextSize(1);
-  // tft.setTextColor(TFT_WHITE);
-  // tft.setCursor(0, 0);
-  kit.setVolume(0);
-
+  tft.init();
+  tft.setRotation(0);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE);
+  tft.setCursor(0, 0);
+  kit.setVolume(1);
+  kit.setMute(false);
 }
 
 void loop() {
-  // tft.fillScreen(TFT_BLACK);
-  // delay(1000);
-  // tft.fillScreen(TFT_WHITE);
-  // delay(1000);
   size_t l = wave.read(buffer, BUFFER_SIZE);
   kit.write(buffer, l);
   if (checkButtons(pinButtonsADC) == 6) {
@@ -88,6 +183,7 @@ void loop() {
       volume++;
     }
     kit.setVolume(volume);
+    tft.fillScreen(TFT_BLACK);
     while (checkButtons(pinButtonsADC) != 0) {}
   }
   else if (checkButtons(pinButtonsADC) == 5) {
@@ -95,7 +191,33 @@ void loop() {
       volume--;
     }
     kit.setVolume(volume);
+    tft.fillScreen(TFT_WHITE);
     while (checkButtons(pinButtonsADC) != 0) {}
+  }
+  else if (checkButtons(pinButtonsADC) == 4) {
+    my_frequency = 3000;
+    wave.setFrequency(my_frequency);
+    while (checkButtons(pinButtonsADC) != 0) {
+      size_t l = wave.read(buffer, BUFFER_SIZE);
+      kit.write(buffer, l);
+    }
+    wave.setFrequency(1000);
+  }
+  else if (checkButtons(pinButtonsADC) == 3) {
+    my_frequency = 500;
+    wave.setFrequency(my_frequency);
+    while (checkButtons(pinButtonsADC) != 0) {
+      size_t l = wave.read(buffer, BUFFER_SIZE);
+      kit.write(buffer, l);
+    }
+    wave.setFrequency(1000);
+  }
+  else if (checkButtons(pinButtonsADC) == 2) {
+    while (checkButtons(pinButtonsADC) != 0) {}
+    for (int i = 0; i < size; ++i) {
+      playNote(lambada[i]);
+    }
+    wave.setFrequency(0);
   }
 
   // tft.fillScreen(TFT_BLACK);
@@ -108,129 +230,3 @@ void loop() {
   // delay(100);
 
 }
-
-// #define GRIDX 120
-// #define GRIDY 90
-// #define CELLXY 4
-
-// // #define GRIDX 320
-// // #define GRIDY 240
-// // #define CELLXY 2
-
-// #define GEN_DELAY 0
-
-// //Current grid
-// uint8_t grid[GRIDX][GRIDY];
-
-// //The new grid for the next generation
-// uint8_t newgrid[GRIDX][GRIDY];
-
-// //Number of generations
-// #define NUMGEN 600
-
-// uint16_t genCount = 0;
-
-
-// //Draws the grid on the display
-// void drawGrid(void) {
-
-//   uint16_t color = TFT_WHITE;
-//   for (int16_t x = 1; x < GRIDX - 1; x++) {
-//     for (int16_t y = 1; y < GRIDY - 1; y++) {
-//       if ((grid[x][y]) != (newgrid[x][y])) {
-//         if (newgrid[x][y] == 1) color = 0xFFFF; //random(0xFFFF);
-//         else color = 0;
-//         tft.fillRect(CELLXY * x, CELLXY * y, CELLXY, CELLXY, color);
-//       }
-//     }
-//   }
-// }
-
-// //Initialise Grid
-// void initGrid(void) {
-//   for (int16_t x = 0; x < GRIDX; x++) {
-//     for (int16_t y = 0; y < GRIDY; y++) {
-//       newgrid[x][y] = 0;
-
-//       if (x == 0 || x == GRIDX - 1 || y == 0 || y == GRIDY - 1) {
-//         grid[x][y] = 0;
-//       }
-//       else {
-//         if (random(3) == 1)
-//           grid[x][y] = 1;
-//         else
-//           grid[x][y] = 0;
-//       }
-
-//     }
-//   }
-// }
-
-// // Check the Moore neighbourhood
-// int getNumberOfNeighbors(int x, int y) {
-//   return grid[x - 1][y] + grid[x - 1][y - 1] + grid[x][y - 1] + grid[x + 1][y - 1] + grid[x + 1][y] + grid[x + 1][y + 1] + grid[x][y + 1] + grid[x - 1][y + 1];
-// }
-
-// //Compute the CA. Basically everything related to CA starts here
-// void computeCA() {
-//   for (int16_t x = 1; x < GRIDX; x++) {
-//     for (int16_t y = 1; y < GRIDY; y++) {
-//       int neighbors = getNumberOfNeighbors(x, y);
-//       if (grid[x][y] == 1 && (neighbors == 2 || neighbors == 3 ))
-//       {
-//         newgrid[x][y] = 1;
-//       }
-//       else if (grid[x][y] == 1)  newgrid[x][y] = 0;
-//       if (grid[x][y] == 0 && (neighbors == 3))
-//       {
-//         newgrid[x][y] = 1;
-//       }
-//       else if (grid[x][y] == 0) newgrid[x][y] = 0;
-//     }
-//   }
-// }
-
-
-
-// void loop() {
-
-//   //Display a simple splash screen
-//   tft.fillScreen(TFT_BLACK);
-//   tft.setTextSize(2);
-//   tft.setTextColor(TFT_WHITE);
-//   tft.setCursor(40, 5);
-//   tft.println(F("Arduino"));
-//   tft.setCursor(35, 25);
-//   tft.println(F("Cellular"));
-//   tft.setCursor(35, 45);
-//   tft.println(F("Automata"));
-
-//   delay(1000);
-
-//   tft.fillScreen(TFT_BLACK);
-
-//   initGrid();
-
-//   genCount = NUMGEN;
-
-//   drawGrid();
-
-//   //Compute generations
-//   for (int gen = 0; gen < genCount; gen++)
-//   {
-//     computeCA();
-//     drawGrid();
-//     delay(GEN_DELAY);
-//     for (int16_t x = 1; x < GRIDX-1; x++) {
-//       for (int16_t y = 1; y < GRIDY-1; y++) {
-//         grid[x][y] = newgrid[x][y];
-//       }
-//     }
-
-//   }
-// }
-
-
-
-
-
