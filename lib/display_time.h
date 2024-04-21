@@ -6,4 +6,6 @@
 // get constant reference on time structure and display current time in format HH:MM:SS
 void display_time(TFT_eSPI & tft, ESP32Time & esp_time);
 
+void display_time(TFT_eSPI & tft, tm * esp_time);
+
 #endif // _DISPLAY_TIME_

@@ -56,6 +56,8 @@ E4 = 330
 #include <../lib/arduino-audiokit-main/src/AudioKitSettings.h>
 #include <../lib/arduino-audiokit-main/examples/output/SineWaveGenerator.h>
 #include <Wire.h>
+#include <ESP32Time.h>
+#include <../lib/display_time.h>
 
 AudioKit kit;
 SineWaveGenerator wave;
@@ -183,6 +185,9 @@ void setup()   {
 
 }
 
+ESP32Time rtc;
+tm setup_time = {.tm_sec=0, .tm_min=1, .tm_hour=0};
+
 void loop() {
   
   switch(checkButtons(pinButtonsADC))
@@ -197,9 +202,15 @@ void loop() {
 
       break;
     case c_START_STOP:
+      time_t current_time = rtc.getEpoch();
+      time_t goal_time = current_time + mktime(&setup_time);
 
+      while(rtc.getEpoch() != goal_time){
+        time_t time_diff = goal_time - rtc.getEpoch();
+        tm * disp_time = localtime(&time_diff);
+        display_time(tft, disp_time);
+      }
       break;
-    default: break;
   }
 }
 
