@@ -131,9 +131,7 @@ Note lambada[] = {
   {NF.E4, ND.Half+ND.Quarter}
 };
 
-// int lambada[] =         {659, 587, 523, 494, 440, 440, 523, 494, 440, 392, 440, 330, 294, 330};
-// int lambada_length[] =  {505, 587, 523, 494, 440, 440, 523, 494, 440, 392, 440, 330, 294, 330};
-int size = sizeof(lambada) / sizeof(lambada[0]);
+
 
 int pinButtonsADC = 6;
 
@@ -147,6 +145,12 @@ void playNote(Note Note) {
     currentMilis = millis();
     size_t l = wave.read(buffer, BUFFER_SIZE);
     kit.write(buffer, l);
+  }
+}
+
+void playSong(Note Song[], int size) {  
+  for (int i = 0; i < size; ++i) {
+    playNote(Song[i]);
   }
 }
 
@@ -178,12 +182,12 @@ void setup()   {
 void loop() {
   size_t l = wave.read(buffer, BUFFER_SIZE);
   kit.write(buffer, l);
+
   if (checkButtons(pinButtonsADC) == 6) {
     if (volume < 100) {
       volume++;
     }
     kit.setVolume(volume);
-    tft.fillScreen(TFT_BLACK);
     while (checkButtons(pinButtonsADC) != 0) {}
   }
   else if (checkButtons(pinButtonsADC) == 5) {
@@ -191,7 +195,6 @@ void loop() {
       volume--;
     }
     kit.setVolume(volume);
-    tft.fillScreen(TFT_WHITE);
     while (checkButtons(pinButtonsADC) != 0) {}
   }
   else if (checkButtons(pinButtonsADC) == 4) {
@@ -214,9 +217,8 @@ void loop() {
   }
   else if (checkButtons(pinButtonsADC) == 2) {
     while (checkButtons(pinButtonsADC) != 0) {}
-    for (int i = 0; i < size; ++i) {
-      playNote(lambada[i]);
-    }
+    int size = sizeof(lambada) / sizeof(lambada[0]);
+    playSong(lambada, size);
     wave.setFrequency(0);
   }
 
