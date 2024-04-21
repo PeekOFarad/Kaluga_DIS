@@ -165,10 +165,11 @@ void setup()   {
   // 1000 hz
   wave.setFrequency(1000);
   wave.setSampleRate(cfg.sampleRate());
+  kit.setVolume(50);
+  kit.setMute(false);
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ADC_setup();
 
-void setup()   {
   //Set up the display
   tft.init();
   tft.setRotation(0);
@@ -176,8 +177,7 @@ void setup()   {
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(0, 0);
-  kit.setVolume(1);
-  kit.setMute(false);
+
 }
 
 void loop() {
