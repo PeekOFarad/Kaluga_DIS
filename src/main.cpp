@@ -181,56 +181,22 @@ void setup()   {
 }
 
 void loop() {
-  size_t l = wave.read(buffer, BUFFER_SIZE);
-  kit.write(buffer, l);
+  
+  switch(checkButtons(pinButtonsADC))
+  {
+    case 6:
 
-  if (checkButtons(pinButtonsADC) == 6) {
-    if (volume < 100) {
-      volume++;
-    }
-    kit.setVolume(volume);
-    while (checkButtons(pinButtonsADC) != 0) {}
-  }
-  else if (checkButtons(pinButtonsADC) == 5) {
-    if (volume > 0) {
-      volume--;
-    }
-    kit.setVolume(volume);
-    while (checkButtons(pinButtonsADC) != 0) {}
-  }
-  else if (checkButtons(pinButtonsADC) == 4) {
-    my_frequency = 3000;
-    wave.setFrequency(my_frequency);
-    while (checkButtons(pinButtonsADC) != 0) {
-      size_t l = wave.read(buffer, BUFFER_SIZE);
-      kit.write(buffer, l);
-    }
-    wave.setFrequency(1000);
-  }
-  else if (checkButtons(pinButtonsADC) == 3) {
-    my_frequency = 500;
-    wave.setFrequency(my_frequency);
-    while (checkButtons(pinButtonsADC) != 0) {
-      size_t l = wave.read(buffer, BUFFER_SIZE);
-      kit.write(buffer, l);
-    }
-    wave.setFrequency(1000);
-  }
-  else if (checkButtons(pinButtonsADC) == 2) {
-    while (checkButtons(pinButtonsADC) != 0) {}
-    int size = sizeof(lambada) / sizeof(lambada[0]);
-    playSong(lambada, size);
-    wave.setFrequency(0);
-  }
+      break;
+    case 5:
 
-  // tft.fillScreen(TFT_BLACK);
-  // tft.setFreeFont(FF18);                 // Select the font
-  // tft.drawString(sFF7, 160, 60, GFXFF);// Print the string name of the font
-  // tft.setFreeFont(FF7);
-  // tft.drawString(String(checkButtons(pinButtonsADC)), 160, 120, GFXFF);
-  // tft.drawString(String(analogReadMilliVolts(pinButtonsADC)), 160, 150, GFXFF);
-  // tft.drawString(String(analogRead(pinButtonsADC)), 160, 180, GFXFF);
-  // delay(100);
+      break;
+    case 4:
 
+      break;
+    case 3:
+
+      break;
+    default: break;
+  }
 }
 
