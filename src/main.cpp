@@ -168,12 +168,13 @@ void setup()   {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ADC_setup();
 
+void setup()   {
   //Set up the display
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
   tft.setTextSize(1);
-  tft.setTextColor(TFT_WHITE);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(0, 0);
   kit.setVolume(1);
   kit.setMute(false);
@@ -232,3 +233,4 @@ void loop() {
   // delay(100);
 
 }
+
