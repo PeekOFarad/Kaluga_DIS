@@ -133,6 +133,8 @@ Note lambada[] = {
   {NF.E4, ND.Half+ND.Quarter}
 };
 
+const int lambada_size = sizeof(lambada) / sizeof(lambada[0]);
+
 const unsigned int c_SW_RST     = 6;
 const unsigned int c_PLUS       = 5;
 const unsigned int c_MINUS      = 4;
@@ -231,6 +233,9 @@ void setup()   {
 
 }
 
+ESP32Time rtc;
+tm setup_time = {0, 0, 0, 1, 0, 70, 0, 0, 0};
+
 void loop() {
   
   switch(checkButtons(pinButtonsADC))
@@ -282,9 +287,54 @@ void loop() {
         }
       break;
     case c_START_STOP:
+      // for reset in the STOP state
+      bool rst_flag = false;
 
+      // wait for button release
+      while(checkButtons(pinButtonsADC) != 0) {};
+
+      time_t current_time = rtc.getEpoch();
+      time_t goal_time = current_time + mktime(&setup_time);
+
+      while(rtc.getEpoch() != goal_time) {
+
+        // check stop button
+        if(checkButtons(pinButtonsADC) == c_START_STOP){
+          // wait for button release
+          while(checkButtons(pinButtonsADC) != 0) {};
+
+          // save current time
+          current_time = rtc.getEpoch();
+          while(1) {
+            if(checkButtons(pinButtonsADC) == c_SW_RST) {
+              rst_flag = true;
+              break;
+            }
+            if(checkButtons(pinButtonsADC) == c_START_STOP) {
+              rtc.setTime(current_time);
+              break;
+            }
+          }
+          // wait for button release
+          while(checkButtons(pinButtonsADC) != 0) {};
+        }
+
+        // check reset button
+        if((checkButtons(pinButtonsADC) == c_SW_RST) || rst_flag) {
+          rst_flag = true;
+          display_time(tft, &setup_time);
+          break;
+        }
+
+        time_t time_diff = goal_time - rtc.getEpoch();
+        tm * disp_time = localtime(&time_diff);
+        display_time(tft, disp_time);
+      }
+      // play sing here
+      if(!rst_flag) {
+        playSong(lambada, lambada_size);
+      }
       break;
-    default: break;
   }
 }
 
