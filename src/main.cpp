@@ -51,11 +51,13 @@ E4 = 330
 #include <../.pio/libdeps/esp32-s2-kaluga-1/TFT_eSPI/User_Setups/Setup420.h>
 #include <../lib/Free_Fonts.h>
 #include <../lib/button_ctrl.h>
+#include <../lib/display_time.h>
 
 #include <../lib/arduino-audiokit-main/src/AudioKitHAL.h>
 #include <../lib/arduino-audiokit-main/src/AudioKitSettings.h>
 #include <../lib/arduino-audiokit-main/examples/output/SineWaveGenerator.h>
 #include <Wire.h>
+#include <ESP32Time.h>
 
 AudioKit kit;
 SineWaveGenerator wave;
@@ -140,6 +142,50 @@ int pinButtonsADC = 6;
 
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
 
+ESP32Time rtc;
+tm timeSetup = {0,0,0,1,0,70,0,0,0};
+
+unsigned long currentMillis = 0, startMillis = 0;
+
+Selected_digit currentDigit = Seconds;
+
+void incrementDigit(Selected_digit currentDigit, bool increment=true) {
+  switch (currentDigit) {
+    case Seconds:
+      if (increment) {
+        time_t epoch_t = mktime(&timeSetup) + 1;
+        timeSetup = *localtime(&epoch_t);
+      }
+      else {
+        time_t epoch_t = mktime(&timeSetup) - 1;
+        timeSetup = *localtime(&epoch_t);
+      }
+      break;
+    case Minutes:
+      if (increment) {
+        time_t epoch_t = mktime(&timeSetup) + 60;
+        timeSetup = *localtime(&epoch_t);
+      }
+      else {
+        time_t epoch_t = mktime(&timeSetup) - 60;
+        timeSetup = *localtime(&epoch_t);
+      }
+      break;
+    case Hours:
+      if (increment) {
+        time_t epoch_t = mktime(&timeSetup) + 3600;
+        timeSetup = *localtime(&epoch_t);
+      }
+      else {
+        time_t epoch_t = mktime(&timeSetup) - 3600;
+        timeSetup = *localtime(&epoch_t);
+      }
+      break;
+
+    default: break;
+  }
+}
+
 void playNote(Note Note) {
   unsigned long startMillis = millis();
   unsigned long currentMilis = startMillis;
@@ -181,6 +227,8 @@ void setup()   {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(0, 0);
 
+  display_timeSetup(tft, timeSetup, currentDigit);
+
 }
 
 void loop() {
@@ -188,13 +236,50 @@ void loop() {
   switch(checkButtons(pinButtonsADC))
   {
     case c_SW_RST:
-
+        currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
+        display_timeSetup(tft, timeSetup, currentDigit);
+        startMillis = millis();
+        while (checkButtons(pinButtonsADC)!=0){
+          currentMillis = millis();
+          if (currentMillis - startMillis > 1000) {
+            while (checkButtons(pinButtonsADC)!=0) {
+              currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
+              display_timeSetup(tft, timeSetup, currentDigit);
+              delay(150);
+            }
+          }
+        }
+        
       break;
     case c_PLUS:
-
+        incrementDigit(currentDigit); //increment selected digit
+        display_timeSetup(tft, timeSetup, currentDigit);
+        startMillis = millis();
+        while (checkButtons(pinButtonsADC)!=0){
+          currentMillis = millis();
+          if (currentMillis - startMillis > 1000) {
+            while (checkButtons(pinButtonsADC)!=0) {
+              incrementDigit(currentDigit); //increment selected digit
+              display_timeSetup(tft, timeSetup, currentDigit);
+              delay(100);
+            }
+          }
+        }
       break;
     case c_MINUS:
-
+        incrementDigit(currentDigit, false); //decrement selected digit
+        display_timeSetup(tft, timeSetup, currentDigit);
+        startMillis = millis();
+        while (checkButtons(pinButtonsADC)!=0){
+          currentMillis = millis();
+          if (currentMillis - startMillis > 1000) {
+            while (checkButtons(pinButtonsADC)!=0) {
+              incrementDigit(currentDigit, false); //decrement selected digit
+              display_timeSetup(tft, timeSetup, currentDigit);
+              delay(100);
+            }
+          }
+        }
       break;
     case c_START_STOP:
 
