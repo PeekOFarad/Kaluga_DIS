@@ -216,7 +216,7 @@ void setup()   {
   // 1000 hz
   wave.setFrequency(1000);
   wave.setSampleRate(cfg.sampleRate());
-  kit.setVolume(50);
+  kit.setVolume(90);
   kit.setMute(false);
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ADC_setup();
@@ -232,9 +232,6 @@ void setup()   {
   display_timeSetup(tft, timeSetup, currentDigit);
 
 }
-
-ESP32Time rtc;
-tm setup_time = {0, 0, 0, 1, 0, 70, 0, 0, 0};
 
 void loop() {
   
@@ -294,7 +291,7 @@ void loop() {
       while(checkButtons(pinButtonsADC) != 0) {};
 
       time_t current_time = rtc.getEpoch();
-      time_t goal_time = current_time + mktime(&setup_time);
+      time_t goal_time = current_time + mktime(&timeSetup);
 
       while(rtc.getEpoch() != goal_time) {
 
@@ -322,7 +319,7 @@ void loop() {
         // check reset button
         if((checkButtons(pinButtonsADC) == c_SW_RST) || rst_flag) {
           rst_flag = true;
-          display_time(tft, &setup_time);
+          display_time(tft, &timeSetup);
           break;
         }
 
@@ -332,6 +329,9 @@ void loop() {
       }
       // play sing here
       if(!rst_flag) {
+        time_t time_diff = goal_time - rtc.getEpoch();
+        tm * disp_time = localtime(&time_diff);
+        display_time(tft, disp_time);
         playSong(lambada, lambada_size);
       }
       break;
