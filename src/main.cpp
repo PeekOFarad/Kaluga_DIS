@@ -51,11 +51,13 @@ E4 = 330
 #include <../.pio/libdeps/esp32-s2-kaluga-1/TFT_eSPI/User_Setups/Setup420.h>
 #include <../lib/Free_Fonts.h>
 #include <../lib/button_ctrl.h>
+#include <../lib/display_time.h>
 
 #include <../lib/arduino-audiokit-main/src/AudioKitHAL.h>
 #include <../lib/arduino-audiokit-main/src/AudioKitSettings.h>
 #include <../lib/arduino-audiokit-main/examples/output/SineWaveGenerator.h>
 #include <Wire.h>
+#include <ESP32Time.h>
 
 AudioKit kit;
 SineWaveGenerator wave;
@@ -140,6 +142,43 @@ int pinButtonsADC = 6;
 
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
 
+ESP32Time rtc;
+tm timeSetup = {.tm_sec=0, .tm_min=0, .tm_hour=0};
+
+Selected_digit currentDigit = Seconds;
+
+void incrementDigit(Selected_digit currentDigit, bool increment=true) {
+  switch (currentDigit) {
+    case Seconds:
+      if (increment) {
+        time_t epoch_t = mktime(&timeSetup) + 1;
+        timeSetup = *localtime(&epoch_t);
+      }
+      else {
+        timeSetup.tm_sec--;
+      }
+      break;
+    case Minutes:
+      if (increment) {
+        timeSetup.tm_min++;
+      }
+      else {
+        timeSetup.tm_min--;
+      }
+      break;
+    case Hours:
+      if (increment) {
+        timeSetup.tm_hour++;
+      }
+      else {
+        timeSetup.tm_hour--;
+      }
+      break;
+
+    default: break;
+  }
+}
+
 void playNote(Note Note) {
   unsigned long startMillis = millis();
   unsigned long currentMilis = startMillis;
@@ -188,13 +227,15 @@ void loop() {
   switch(checkButtons(pinButtonsADC))
   {
     case c_SW_RST:
-
+        currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
       break;
     case c_PLUS:
-
+        incrementDigit(currentDigit); //increment selected digit
+        display_timeSetup(tft, timeSetup, currentDigit);
       break;
     case c_MINUS:
-
+        incrementDigit(currentDigit, false); //decrement selected digit
+        display_timeSetup(tft, timeSetup, currentDigit);
       break;
     case c_START_STOP:
 
