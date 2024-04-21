@@ -188,7 +188,7 @@ void setup()   {
 }
 
 ESP32Time rtc;
-tm setup_time = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+tm setup_time = {0, 0, 0, 1, 0, 70, 0, 0, 0};
 
 void loop() {
   
@@ -204,16 +204,41 @@ void loop() {
 
       break;
     case c_START_STOP:
+      // wait for button release
+      while(checkButtons(pinButtonsADC) != 0) {};
+
       time_t current_time = rtc.getEpoch();
-      Serial.println("Current time");
-      Serial.println(current_time);
       time_t goal_time = current_time + mktime(&setup_time);
-      Serial.println("Setup time");
-      Serial.println(mktime(&setup_time));
-      Serial.println("Goal time");
-      Serial.println(goal_time);
 
       while(rtc.getEpoch() != goal_time){
+        // for reset in the STOP state
+        bool rst_flag = false;
+
+        // check stop button
+        if(checkButtons(pinButtonsADC) == c_START_STOP){
+          // wait for button release
+          while(checkButtons(pinButtonsADC) != 0) {};
+
+          // save current time
+          current_time = rtc.getEpoch();
+          while(1) {
+            if(checkButtons(pinButtonsADC) == c_SW_RST) {
+              rst_flag = true;
+              break;
+            }
+            if(checkButtons(pinButtonsADC) == c_START_STOP) {
+              rtc.setTime(current_time);
+              break;
+            }
+          }
+        }
+
+        // check reset button
+        if((checkButtons(pinButtonsADC) == c_SW_RST) || rst_flag) {
+          display_time(tft, &setup_time);
+          break;
+        }
+
         time_t time_diff = goal_time - rtc.getEpoch();
         tm * disp_time = localtime(&time_diff);
         display_time(tft, disp_time);
