@@ -133,6 +133,8 @@ Note lambada[] = {
   {NF.E4, ND.Half+ND.Quarter}
 };
 
+const int lambada_size = sizeof(lambada) / sizeof(lambada[0]);
+
 const unsigned int c_SW_RST     = 6;
 const unsigned int c_PLUS       = 5;
 const unsigned int c_MINUS      = 4;
@@ -186,7 +188,7 @@ void setup()   {
 }
 
 ESP32Time rtc;
-tm setup_time = {.tm_sec=0, .tm_min=1, .tm_hour=0};
+tm setup_time = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void loop() {
   
@@ -216,6 +218,8 @@ void loop() {
         tm * disp_time = localtime(&time_diff);
         display_time(tft, disp_time);
       }
+      // play sing here
+      playSong(lambada, lambada_size);
       break;
   }
 }
