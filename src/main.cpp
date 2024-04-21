@@ -204,15 +204,16 @@ void loop() {
 
       break;
     case c_START_STOP:
+      // for reset in the STOP state
+      bool rst_flag = false;
+
       // wait for button release
       while(checkButtons(pinButtonsADC) != 0) {};
 
       time_t current_time = rtc.getEpoch();
       time_t goal_time = current_time + mktime(&setup_time);
 
-      while(rtc.getEpoch() != goal_time){
-        // for reset in the STOP state
-        bool rst_flag = false;
+      while(rtc.getEpoch() != goal_time) {
 
         // check stop button
         if(checkButtons(pinButtonsADC) == c_START_STOP){
@@ -231,10 +232,13 @@ void loop() {
               break;
             }
           }
+          // wait for button release
+          while(checkButtons(pinButtonsADC) != 0) {};
         }
 
         // check reset button
         if((checkButtons(pinButtonsADC) == c_SW_RST) || rst_flag) {
+          rst_flag = true;
           display_time(tft, &setup_time);
           break;
         }
@@ -244,7 +248,9 @@ void loop() {
         display_time(tft, disp_time);
       }
       // play sing here
-      playSong(lambada, lambada_size);
+      if(!rst_flag) {
+        playSong(lambada, lambada_size);
+      }
       break;
   }
 }
