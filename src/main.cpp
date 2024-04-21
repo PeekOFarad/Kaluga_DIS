@@ -143,7 +143,9 @@ int pinButtonsADC = 6;
 TFT_eSPI tft = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);       // Invoke custom library
 
 ESP32Time rtc;
-tm timeSetup = {0,0,0,0,0,0,0,0,0};
+tm timeSetup = {0,0,0,1,0,70,0,0,0};
+
+unsigned long currentMillis = 0, startMillis = 0;
 
 Selected_digit currentDigit = Seconds;
 
@@ -234,19 +236,50 @@ void loop() {
   switch(checkButtons(pinButtonsADC))
   {
     case c_SW_RST:
-        while (checkButtons(pinButtonsADC)!=0){}
         currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
         display_timeSetup(tft, timeSetup, currentDigit);
+        startMillis = millis();
+        while (checkButtons(pinButtonsADC)!=0){
+          currentMillis = millis();
+          if (currentMillis - startMillis > 1000) {
+            while (checkButtons(pinButtonsADC)!=0) {
+              currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
+              display_timeSetup(tft, timeSetup, currentDigit);
+              delay(150);
+            }
+          }
+        }
+        
       break;
     case c_PLUS:
-        while (checkButtons(pinButtonsADC)!=0){}
         incrementDigit(currentDigit); //increment selected digit
         display_timeSetup(tft, timeSetup, currentDigit);
+        startMillis = millis();
+        while (checkButtons(pinButtonsADC)!=0){
+          currentMillis = millis();
+          if (currentMillis - startMillis > 1000) {
+            while (checkButtons(pinButtonsADC)!=0) {
+              incrementDigit(currentDigit); //increment selected digit
+              display_timeSetup(tft, timeSetup, currentDigit);
+              delay(100);
+            }
+          }
+        }
       break;
     case c_MINUS:
-    while (checkButtons(pinButtonsADC)!=0){}
         incrementDigit(currentDigit, false); //decrement selected digit
         display_timeSetup(tft, timeSetup, currentDigit);
+        startMillis = millis();
+        while (checkButtons(pinButtonsADC)!=0){
+          currentMillis = millis();
+          if (currentMillis - startMillis > 1000) {
+            while (checkButtons(pinButtonsADC)!=0) {
+              incrementDigit(currentDigit, false); //decrement selected digit
+              display_timeSetup(tft, timeSetup, currentDigit);
+              delay(100);
+            }
+          }
+        }
       break;
     case c_START_STOP:
 
