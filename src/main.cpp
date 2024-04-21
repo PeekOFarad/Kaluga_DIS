@@ -131,7 +131,10 @@ Note lambada[] = {
   {NF.E4, ND.Half+ND.Quarter}
 };
 
-
+const unsigned int c_SW_RST     = 6;
+const unsigned int c_PLUS       = 5;
+const unsigned int c_MINUS      = 4;
+const unsigned int c_START_STOP = 3;
 
 int pinButtonsADC = 6;
 
@@ -184,16 +187,16 @@ void loop() {
   
   switch(checkButtons(pinButtonsADC))
   {
-    case 6:
+    case c_SW_RST:
 
       break;
-    case 5:
+    case c_PLUS:
 
       break;
-    case 4:
+    case c_MINUS:
 
       break;
-    case 3:
+    case c_START_STOP:
 
       break;
     default: break;
