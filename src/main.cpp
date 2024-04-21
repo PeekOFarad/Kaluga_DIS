@@ -203,7 +203,13 @@ void loop() {
       break;
     case c_START_STOP:
       time_t current_time = rtc.getEpoch();
+      Serial.println("Current time");
+      Serial.println(current_time);
       time_t goal_time = current_time + mktime(&setup_time);
+      Serial.println("Setup time");
+      Serial.println(mktime(&setup_time));
+      Serial.println("Goal time");
+      Serial.println(goal_time);
 
       while(rtc.getEpoch() != goal_time){
         time_t time_diff = goal_time - rtc.getEpoch();
