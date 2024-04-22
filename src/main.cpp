@@ -45,6 +45,7 @@ E4 = 330
 ////////////////////////////////////////////////////////////////////
 #include <Arduino.h>
 // Walking 1 write and read pixel test
+#include <NeoPixelBus.h>
 
 #include <TFT_eSPI.h>
 #include <SPI.h>
@@ -58,6 +59,23 @@ E4 = 330
 #include <../lib/arduino-audiokit-main/examples/output/SineWaveGenerator.h>
 #include <Wire.h>
 #include <ESP32Time.h>
+
+NeoPixelBus<NeoGrbFeature, NeoWs2812xMethod> strip(1, 45);
+
+#define colorSaturation 128
+
+RgbColor red(colorSaturation, 0, 0);
+RgbColor green(0, colorSaturation, 0);
+RgbColor blue(0, 0, colorSaturation);
+RgbColor white(colorSaturation);
+RgbColor black(0);
+RgbColor cyan(0,colorSaturation,colorSaturation);
+
+HslColor hslRed(red);
+HslColor hslGreen(green);
+HslColor hslBlue(blue);
+HslColor hslWhite(white);
+HslColor hslBlack(black);
 
 AudioKit kit;
 SineWaveGenerator wave;
@@ -216,7 +234,7 @@ void setup()   {
   // 1000 hz
   wave.setFrequency(1000);
   wave.setSampleRate(cfg.sampleRate());
-  kit.setVolume(90);
+  kit.setVolume(50);
   kit.setMute(false);
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ADC_setup();
@@ -231,6 +249,10 @@ void setup()   {
 
   display_timeSetup(tft, timeSetup, currentDigit);
 
+  // this resets all the neopixels to an off state
+  strip.Begin();
+  strip.Show();
+
 }
 
 void loop() {
@@ -240,6 +262,26 @@ void loop() {
     case c_SW_RST:
         currentDigit = static_cast<Selected_digit>((currentDigit + 1) % NUM_DIGITS);
         display_timeSetup(tft, timeSetup, currentDigit);
+        switch (currentDigit)
+        {
+        case Seconds:
+          strip.SetPixelColor(0, cyan);
+          strip.Show();
+          break;
+        case Minutes:
+          strip.SetPixelColor(0, green);
+          strip.Show();
+          break;
+        case Hours:
+          strip.SetPixelColor(0, blue);
+          strip.Show();
+          break;
+        
+        default: 
+          strip.SetPixelColor(0, black);
+          strip.Show();
+        break;
+        }
         startMillis = millis();
         while (checkButtons(pinButtonsADC)!=0){
           currentMillis = millis();
@@ -284,6 +326,8 @@ void loop() {
         }
       break;
     case c_START_STOP:
+      strip.SetPixelColor(0, black);
+      strip.Show();
       // for reset in the STOP state
       bool rst_flag = false;
 
@@ -332,7 +376,11 @@ void loop() {
         time_t time_diff = goal_time - rtc.getEpoch();
         tm * disp_time = localtime(&time_diff);
         display_time(tft, disp_time);
+        strip.SetPixelColor(0, red);
+        strip.Show();
         playSong(lambada, lambada_size);
+        strip.SetPixelColor(0, black);
+        strip.Show();
       }
       break;
   }
